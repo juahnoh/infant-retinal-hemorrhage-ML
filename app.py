@@ -1,22 +1,26 @@
-# app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
 
-# Load the trained model pipeline
-pipeline = joblib.load('trained_model.pkl')
+# 모델 불러오기
+pipeline = joblib.load('trained_model_pipeline.pkl')
 
-st.title("👶 RH Score Prediction for Newborns")
+st.title("👶 RH Score Predictor for Newborns")
 
-# Input form
-gender = st.selectbox("Gender", [0, 1])
-birth = st.selectbox("Birth Category", [0, 1])
-ga_days = st.number_input("Gestational Age (days)", 200, 300, value=272)
-wt = st.number_input("Birth Weight (g)", 1000, 5000, value=3200)
+# --- 🔽 사용자 입력 (라벨은 보기 좋게, 값은 숫자로 변환) ---
+gender_label = st.selectbox("Gender", ["Female", "Male"])
+gender = 0 if gender_label == "Male" else 1
+
+birth_label = st.selectbox("Birth Method", ["NSVD", "C-section"])
+birth = 0 if birth_label == "NSVD" else 1
+
+ga_days = st.number_input("Gestational Age (days)", min_value=200, max_value=300, value=272)
+wt = st.number_input("Birth Weight (g)", min_value=1000, max_value=5000, value=3200)
 apgar_1 = st.selectbox("Apgar Score at 1 min", list(range(1, 11)))
 apgar_5 = st.selectbox("Apgar Score at 5 min", list(range(1, 11)))
 
+# --- 🔮 예측 실행 ---
 if st.button("Predict RH Score"):
     apgar_diff = apgar_5 - apgar_1
     wt_per_ga = wt / (ga_days + 1e-6)
@@ -39,7 +43,7 @@ if st.button("Predict RH Score"):
     prediction = pipeline.predict(input_data)[0]
     proba = pipeline.predict_proba(input_data)[0]
 
-    st.success(f"Predicted RH Score: {prediction}")
-    st.write("Prediction Probabilities:")
+    st.success(f"🧠 Predicted RH Score: {prediction}")
+    st.write("🔢 Prediction Probabilities:")
     for i, p in enumerate(proba):
         st.write(f"Score {i}: {p:.2%}")
