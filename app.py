@@ -5,7 +5,7 @@ import numpy as np
 import joblib
 
 # Load the trained model pipeline
-pipeline = joblib.load('trained_model_pipeline.pkl')
+pipeline = joblib.load('trained_model.pkl')
 
 st.title("👶 RH Score Prediction for Newborns")
 
