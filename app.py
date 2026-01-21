@@ -3,6 +3,9 @@ import pandas as pd
 import numpy as np
 import joblib
 import os
+import sys
+import streamlit as st
+st.write("PYTHON:", sys.version)
 
 st.title("👶 RH Score Predictor for Newborns")
 
