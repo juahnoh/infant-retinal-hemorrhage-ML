@@ -7,8 +7,6 @@ import streamlit as st
 
 st.set_page_config(page_title="RH Score Predictor", page_icon="👶", layout="centered")
 
-st.write("PYTHON:", sys.version)
-
 st.title("👶 RH Score Predictor for Newborns")
 st.caption("Predict retinal hemorrhage (RH) score from basic birth parameters.")
 
