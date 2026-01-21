@@ -5,6 +5,16 @@ import joblib
 import os
 import sys
 import streamlit as st
+
+import traceback
+try:
+    pipeline = joblib.load(model_files[selected_model])
+    st.success(f"✅ {selected_model} model loaded successfully!")
+except Exception as e:
+    st.error(f"❌ Model load failed: {type(e).__name__}: {e}")
+    st.code(traceback.format_exc())
+    st.stop()
+
 st.write("PYTHON:", sys.version)
 
 st.title("👶 RH Score Predictor for Newborns")
