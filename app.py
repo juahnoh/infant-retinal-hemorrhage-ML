@@ -13,7 +13,6 @@ st.title("👶 RH Score Predictor for Newborns")
 
 # --- 모델 선택 ---
 model_files = {
-    'RandomForest': 'RandomForest_best_pipeline_rh_score.pkl',
     'LightGBM': 'LightGBM_best_pipeline_rh_score.pkl',
     'XGBoost': 'XGBoost_best_pipeline_rh_score.pkl',
     'KNN': 'KNN_best_pipeline_rh_score.pkl'
