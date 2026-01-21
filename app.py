@@ -6,14 +6,6 @@ import os
 import sys
 import streamlit as st
 
-import traceback
-try:
-    pipeline = joblib.load(model_files[selected_model])
-    st.success(f"✅ {selected_model} model loaded successfully!")
-except Exception as e:
-    st.error(f"❌ Model load failed: {type(e).__name__}: {e}")
-    st.code(traceback.format_exc())
-    st.stop()
 
 st.write("PYTHON:", sys.version)
 
@@ -38,6 +30,15 @@ except FileNotFoundError:
     st.stop()
 
 st.markdown("---")
+
+import traceback
+try:
+    pipeline = joblib.load(model_files[selected_model])
+    st.success(f"✅ {selected_model} model loaded successfully!")
+except Exception as e:
+    st.error(f"❌ Model load failed: {type(e).__name__}: {e}")
+    st.code(traceback.format_exc())
+    st.stop()
 
 # --- 사용자 입력 ---
 col1, col2 = st.columns(2)
