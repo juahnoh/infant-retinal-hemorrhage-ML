@@ -8,6 +8,7 @@ import streamlit as st
 st.set_page_config(page_title="RH Score Predictor", page_icon="👶", layout="centered")
 
 st.write("PYTHON:", sys.version)
+
 st.title("👶 RH Score Predictor for Newborns")
 st.caption("Predict retinal hemorrhage (RH) score from basic birth parameters.")
 
@@ -54,13 +55,12 @@ st.markdown("---")
 
 # --- 예측 실행 ---
 if st.button("🔮 Predict RH Score", type="primary"):
-    # Feature engineering
     apgar_diff = apgar_5 - apgar_1
     wt_per_ga = wt / (ga_days + 1e-6)
     ga_sq = float(ga_days) ** 2
     wt_sq = float(wt) ** 2
 
-    # ✅ 중요: 범주형은 "라벨 문자열" 그대로 넣음 (OHE/ColumnTransformer 호환)
+    # ✅ 범주형은 라벨 문자열로
     input_data = pd.DataFrame([{
         "gender": str(gender_label),
         "birth": str(birth_label),
@@ -74,10 +74,9 @@ if st.button("🔮 Predict RH Score", type="primary"):
         "wt_sq": float(wt_sq),
     }])
 
-    # 공백 문자열/빈 값 방어
     input_data = input_data.replace(r"^\s*$", np.nan, regex=True)
 
-    # 파이프라인이 기대하는 컬럼에 맞춰 정렬/보정 (있으면)
+    # 파이프라인 기대 컬럼 정렬
     if hasattr(pipeline, "feature_names_in_"):
         expected = list(pipeline.feature_names_in_)
         for c in expected:
@@ -85,7 +84,7 @@ if st.button("🔮 Predict RH Score", type="primary"):
                 input_data[c] = np.nan
         input_data = input_data[expected]
 
-    # (선택) 디버그 출력 토글
+    # 디버그
     with st.expander("🛠️ Debug (optional)"):
         st.write("input_data:")
         st.dataframe(input_data)
@@ -95,22 +94,14 @@ if st.button("🔮 Predict RH Score", type="primary"):
             st.write("pipeline.feature_names_in_:")
             st.write(list(pipeline.feature_names_in_))
 
-    # --- 예측 ---
     try:
         prediction = pipeline.predict(input_data)[0]
-
-        # predict_proba 없을 수 있으니 방어
-        if hasattr(pipeline, "predict_proba"):
-            proba = pipeline.predict_proba(input_data)[0]
-        else:
-            proba = None
-
+        proba = pipeline.predict_proba(input_data)[0] if hasattr(pipeline, "predict_proba") else None
     except Exception as e:
         st.error(f"❌ Predict failed: {type(e).__name__}: {e}")
         st.code(traceback.format_exc())
         st.stop()
 
-    # --- 결과 표시 ---
     st.markdown("### 📊 Prediction Results")
     col_result1, col_result2 = st.columns(2)
 
@@ -123,7 +114,6 @@ if st.button("🔮 Predict RH Score", type="primary"):
         else:
             st.metric("🎯 Confidence", "N/A")
 
-    # --- 확률 분포 ---
     if proba is not None:
         st.markdown("---")
         st.markdown("### 🔢 Prediction Probabilities")
@@ -134,17 +124,16 @@ if st.button("🔮 Predict RH Score", type="primary"):
         })
 
         st.bar_chart(prob_df.set_index("RH Score"))
-        st.dataframe(
-            prob_df.style.format({"Probability": "{:.2%}"}).background_gradient(cmap="Blues"),
-            use_container_width=True
-        )
 
-        # Severe 여부 판단 (rh_score >= 3)
+        # ✅ matplotlib 없이 표시 (Styler.background_gradient 제거)
+        prob_show = prob_df.copy()
+        prob_show["Probability"] = prob_show["Probability"].map(lambda x: f"{x:.2%}")
+        st.dataframe(prob_show, use_container_width=True)
+
         severe_prob = float(np.sum(proba[3:])) if len(proba) > 3 else 0.0
 
         st.markdown("---")
         st.markdown("### ⚠️ Severity Assessment")
-
         if severe_prob > 0.5:
             st.error(f"🚨 High risk of severe RH (score ≥ 3): {severe_prob:.1%}")
         else:
